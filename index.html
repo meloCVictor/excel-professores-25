@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apostila Interativa de Excel para Concursos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .slide {
+            display: none;
+        }
+        .slide.active {
+            display: flex;
+        }
+        .option {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .option.selected {
+            transform: none;
+            cursor: default;
+        }
+        .option.correct {
+            background-color: #D1FAE5; /* green-100 */
+            border-color: #10B981; /* green-500 */
+        }
+        .option.incorrect {
+            background-color: #FEE2E2; /* red-100 */
+            border-color: #EF4444; /* red-500 */
+        }
+        .feedback {
+            display: none;
+        }
+        .feedback.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" style="height: 700px;">
+        
+        <!-- Viewport dos Slides -->
+        <div id="slide-container" class="flex-grow p-6 md:p-10 overflow-y-auto">
+            <!-- Os slides serão inseridos aqui pelo JavaScript -->
+        </div>
+        
+        <!-- Navegação e Contador -->
+        <div class="bg-gray-50 border-t border-gray-200 p-4 flex justify-between items-center">
+            <button id="prevBtn" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg shadow hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+            <div id="slideCounter" class="text-sm text-gray-600"></div>
+            <button id="nextBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">Próximo</button>
+        </div>
+
+    </div>
+
+    <script>
+        const slideContainer = document.getElementById('slide-container');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        let slides = [];
+        let currentSlide = 0;
+
+        function createSlides() {
+            // Estrutura de dados contendo toda a apostila
+            const slidesData = [
+                // Slide de Título
+                { type: 'content', special: 'title-slide', title: 'Apostila de Concursos', subtitle: 'Microsoft Excel', text: 'Clique em "Próximo" para começar.' },
+                
+                // Tema 1: Conteúdo
+                { type: 'content', slideTitle: 'Tema 1: Interface, Comandos e Conceitos Fundamentais', title: 'O que é o Excel?', text: 'O Microsoft Excel é um software de planilha eletrônica, parte do pacote Microsoft 365. É projetado para organizar, analisar, e visualizar dados.', list: ['<strong>Pasta de Trabalho vs. Planilha:</strong> Uma <strong>pasta de trabalho</strong> é o arquivo do Excel (.xlsx). Dentro, você pode ter uma ou mais <strong>planilhas</strong> (abas). Pense na pasta de trabalho como um fichário e nas planilhas como as folhas dentro dele.', '<strong>Célula:</strong> É a interseção de uma linha (1, 2, 3...) e uma coluna (A, B, C...). O endereço combina a letra e o número (ex: B5).']},
+                { type: 'content', slideTitle: 'Tema 1: Interface, Comandos e Conceitos Fundamentais', title: 'Conceitos Fundamentais', text: 'Dominar este tema significa conhecer o "mapa" do Excel. As bancas esperam que você saiba onde as ferramentas estão localizadas:', list: ['<strong>Guias:</strong> Agrupam funcionalidades por tema (Página Inicial, Inserir, Fórmulas...). A guia <strong>Arquivo</strong> abre o modo "Backstage" para gerenciar o arquivo (salvar, imprimir, etc.).', '<strong>Grupos:</strong> Dentro de cada guia, os comandos são organizados (ex: Fonte, Alinhamento).', '<strong>Barra de Ferramentas de Acesso Rápido:</strong> Atalhos para comandos mais usados.', '<strong>Barra de Fórmulas:</strong> Exibe o conteúdo da célula ativa.','<strong>Barra de Status:</strong> Exibe informações rápidas (soma, média, contagem).']},
+                
+                // Tema 1: Questões
+                { type: 'quiz', id: 1, question: '(FUNDATEC - Q3194501) No Microsoft Excel, uma célula é:', options: ['A interseção de uma linha e uma coluna em uma planilha, que pode conter dados como texto, números ou fórmulas.', 'A ferramenta usada para aplicar formatação condicional em uma planilha.', 'Um grupo de dados contínuos e organizados em linhas e colunas dentro de uma pasta de trabalho.', 'Um arquivo que contém uma ou mais planilhas.', 'Um conjunto de fórmulas pré-definidas que são aplicadas automaticamente a uma planilha.'], correct: 0, explanation: 'O conceito fundamental de uma planilha é a célula, que é exatamente o ponto de encontro (interseção) entre uma linha (identificada por números) e uma coluna (identificada por letras).' },
+                { type: 'quiz', id: 2, question: '(FUNDATEC - Q3043054) Após analisar a Figura 2, pode-se afirmar que a planilha que está sendo utilizada foi renomeada com o nome ___, que o arquivo foi salvo com o nome ___ e que a soma dos valores selecionados é igual a ___.', options: ['CONTAS – FIXAS – R$ 1.430,00', 'FIXAS – CONTROLE FINANCEIRO – R$ 1.430,00', 'CONTROLE FINANCEIRO – FIXAS – R$ 1.295,00', 'CONTAS – CONTROLE FINANCEIRO – R$ 1.295,00', 'CONTROLE FINANCEIRO – CONTAS – R$ 1.430,00'], correct: 1, explanation: 'Analisando a interface do Excel: 1) O nome da planilha está na aba inferior ("FIXAS"). 2) O nome do arquivo (pasta de trabalho) está na barra de título superior ("CONTROLE FINANCEIRO"). 3) A soma é exibida na barra de status.' },
+                { type: 'quiz', id: 3, question: '(OBJETIVA - Q3277863) No Excel 2016, a aba de fórmulas oferece várias ferramentas para criar e gerenciar cálculos complexos. Assinalar a alternativa que NÃO representa uma funcionalidade disponível na aba de fórmulas.', options: ['Inserção de funções matemáticas e lógicas.', 'Auditoria de fórmulas, como rastreamento de precedentes e dependentes.', 'Inserção de gráficos e tabelas dinâmicas.', 'Gerenciamento de nomes para intervalos de células.'], correct: 2, explanation: 'A inserção de gráficos e tabelas dinâmicas é uma funcionalidade localizada na guia Inserir, não na guia Fórmulas.' },
+                { type: 'quiz', id: 4, question: '(OBJETIVA - Q3276656) Na aba “Página Inicial” do Microsoft Excel 2016, encontra-se o grupo de ferramentas denominado “Células” [...]. Com base nessas informações, assinalar a alternativa que indica o nome do ícone destacado.', options: ['Excluir.', 'Padronizar.', 'Arquivar.', 'Desfazer.'], correct: 0, explanation: 'O ícone destacado na questão pertence ao comando Excluir, localizado na guia Página Inicial, grupo Células.' },
+                { type: 'quiz', id: 5, question: '(OBJETIVA - Q3268072) O Microsoft Excel 2019 apresenta o bloco de “Configurações de Página” na guia:', options: ['Layout da Página.', 'Página Inicial.', 'Arquivo.', 'Fórmulas.'], correct: 0, explanation: 'O grupo Configuração de Página (com Margens, Orientação, Tamanho, etc.) está localizado na guia Layout da Página.' },
+                { type: 'quiz', id: 6, question: '(OBJETIVA - Q3054096) [...] analisar a ilustração que apresenta as funcionalidades e ícones de um dos grupos da guia Página Inicial e assinalar a alternativa que identifica CORRETAMENTE esse grupo.', options: ['Alinhamento.', 'Fonte.', 'Número.', 'Estilos.'], correct: 1, explanation: 'O grupo de ícones exibido (Negrito, Itálico, tipo de letra, tamanho) é o grupo Fonte.' },
+                { type: 'quiz', id: 7, question: '(Legalle - Q3658431) [...] A guia Fórmulas, por exemplo, inclui o grupo Nomes Definidos, que oferece recursos para gerenciar e organizar elementos dentro da planilha. Uma das funcionalidades disponíveis neste grupo é:', options: ['AutoSoma.', 'Verificação de Erros.', 'Janela de lnspeção.', 'Criar a partir da Seleção.'], correct: 3, explanation: 'O grupo "Nomes Definidos" da guia "Fórmulas" contém o comando "Criar a partir da Seleção".' },
+                { type: 'quiz', id: 8, question: '(Legalle - Q3468230) [...] considere que um usuário precisou utilizar 32 colunas para inserir todos os dados que precisava. A partir dessa situação, pode-se afirmar que a última coluna da planilha desse usuário está identificada da seguinte forma:', options: ['AF.', 'A6.', 'ZZZZZ.', 'F1.'], correct: 0, explanation: 'As colunas seguem a ordem alfabética. Após a 26ª (Z), a contagem continua com duas letras: 27ª (AA), 28ª (AB)... A 32ª coluna será AF.' },
+                
+                // Tema 2: Conteúdo
+                { type: 'content', slideTitle: 'Tema 2: Fórmulas e Operadores', title: 'Explicação do Tema', text: 'Uma **fórmula** é uma expressão que executa um cálculo. A regra mais importante é: **toda fórmula começa com o sinal de igual (=)**. As fórmulas podem conter valores constantes, referências a células, operadores e funções.', list: ['<strong>Precedência de Operadores:</strong> O Excel segue uma ordem específica para calcular: 1º Parênteses `()`, 2º Exponenciação `^`, 3º Multiplicação `*` e Divisão `/`, 4º Adição `+` e Subtração `-`.', '<strong>Operadores de Referência:</strong> `:` (intervalo, "até"), `;` (união, "e"), `(espaço)` (interseção).']},
+
+                // Tema 2: Questões
+                { type: 'quiz', id: 9, question: '(Legalle - Q3468162) [...] assinale a alternativa que apresenta um operador de referência.', options: ['*', '<', ':', '^'], correct: 2, explanation: 'O operador de dois-pontos (:) é um operador de referência, usado para criar uma referência a um intervalo de células contíguas (ex: A1:A10).' },
+                { type: 'quiz', id: 10, question: '(Legalle - Q3459998) No Microsoft Excel 365, qual o resultado da seguinte fórmula: `=((1000 + 1700 + 2100) / 3) * 2`?', options: ['4.800.', '1.600.', '3.200.', '2.400', '2.000.'], correct: 2, explanation: 'Respeitando a ordem de operações: `(4800 / 3) * 2` -> `1600 * 2` -> `3200`.' },
+                { type: 'quiz', id: 11, question: '(FUNDATEC / IPE SAÚDE – 2022) Em uma planilha do Microsoft Excel 2016, onde, na célula B2, existe o valor 120 e, na célula B3, existe o valor 100, ambos valores numéricos, o que deve ser inserido na célula B4 para que ela apresente a diferença de B2 menos B3?', options: ['menos(B2,B3)', '=menos(B2,B3)', 'B2-B3', '=B2-B3', 'igual(B2-B3)'], correct: 3, explanation: 'Uma fórmula deve começar com `=` e não existe a função `menos()`. A subtração é feita com o operador `-`.' },
+                
+                 // Tema 3: Conteúdo
+                { type: 'content', slideTitle: 'Tema 3: Funções Essenciais', title: 'Explicação do Tema', text: 'As **funções** são fórmulas prontas que simplificam cálculos. A sintaxe básica é `=NOME_DA_FUNÇÃO(argumento1; argumento2; ...)`', list: ['<strong>Estatísticas:</strong> `SOMA`, `MÉDIA`, `MÁXIMO`, `MÍNIMO`, `CONT.NÚM`, `CONT.VALORES`, `CONT.SE(intervalo; critério)`.', '<strong>Lógicas:</strong> `SE(teste_lógico; valor_se_verdadeiro; valor_se_falso)`. Testa uma condição.', '<strong>Matemáticas:</strong> `ARRED(número; núm_dígitos)`, `MOD(número; divisor)`.'], },
+
+                // Tema 3: Questões
+                { type: 'quiz', id: 12, question: '(FUNDATEC - Q3094618) [...] No Microsoft Excel, existe uma função que encontra a média de valores contidos em um intervalo de células que atendem a vários critérios. A qual função o trecho se refere?', options: ['MÉDIASE.', 'MÉDIASES', 'MÉDIACRIT.', 'MÉDIACOND.', 'MÉDIAMULT.'], correct: 1, explanation: 'A palavra-chave é "vários critérios". Para calcular a média com base em múltiplos critérios, utiliza-se a função MÉDIASES.' },
+                { type: 'quiz', id: 13, question: '(FUNDATEC - Q2551065) No Excel 2013, a fórmula `=ARRED(13,879;1)` foi digitada. Qual valor será retornado?', options: ['14.', '13,8.', '13,9.', '13,88.', '13,880.'], correct: 2, explanation: 'A função ARRED arredonda 13,879 para 1 casa decimal. Como o segundo dígito (7) é >= 5, o dígito anterior (8) é arredondado para cima, resultando em 13,9.' },
+                { type: 'quiz', id: 14, question: '(OBJETIVA - Q2677378) Considerando-se uma planilha do Excel 2013, a função inserida em B7 retornará como resultado: `=MÁXIMO(A1:B5)`', options: ['10', '12', '5', '62'], correct: 1, explanation: 'A função MÁXIMO retorna o maior valor no intervalo A1:B5. Analisando os dados, o maior valor é 12.' },
+                { type: 'quiz', id: 15, question: '(OBJETIVA - Q2437500) [...] Para que a observação da célula E2 seja preenchida automaticamente, conforme critérios adotados pelo gerente, qual das fórmulas a seguir deve estar configurada?', options: ['`=SE(D2<80%;$G2;SE(D2<90%;$G3;SE(D2<100%;$G4;SE(D2>100%;$G5))))`', '`=SE(D2<80%;$G2;SE(D2<90%;$G3;SE(D2<100%;$G4;SE(D2<100%;$G5))))`', '`=SE(D1<80%;$G1;SE(D1<90%;$G1;SE(D2<100%;$G4;SE(D2 %100%;$G5))))`', '`=SE(D2<80%;$G2;SE(D2=90%;$G3;SE(D2=100%;$G4;SE(D2 =100%;$G5))))`'], correct: 0, explanation: 'A fórmula utiliza funções SE aninhadas. Para 75% em D2, a primeira condição D2<80% é verdadeira, retornando o valor de $G2.' },
+                { type: 'quiz', id: 16, question: '(OBJETIVA - Q2348593) [...] Qual é o nome da função que realiza essa tarefa [contar o número de células que atendem a um critério específico] no Excel 2019?', options: ['PROCV', 'SE', 'SES', 'CONT.SE'], correct: 3, explanation: 'A descrição é a definição exata da função CONT.SE.' },
+                { type: 'quiz', id: 17, question: '(Legalle - Q3753032) Qual é o nome da função, no Microsoft Excel 365, que retorna o resto depois da divisão de número por um divisor [...]?', options: ['MOD.', 'SE.', 'VF.', 'CORRESP.'], correct: 0, explanation: 'A função que retorna o resto de uma divisão é a MOD.' },
+                { type: 'quiz', id: 18, question: '(Legalle - Q3753028) Qual é a forma CORRETA de utilizar a função no Microsoft Excel 365 para arredondar um número na célula A1 para um número especificado de dígitos (dois dígitos)?', options: ['`=RAIZ(41,2)`', '`=ARRED(A1, 2)`', '`-ARRED(2, A1)`', '`=EXP(2, A1)`'], correct: 1, explanation: 'A sintaxe correta é `=ARRED(número; núm_dígitos)`. Para arredondar o valor da célula A1 para 2 casas decimais, a fórmula é `=ARRED(A1; 2)`.' },
+                { type: 'quiz', id: 19, question: '(Legalle - Q3460057) No Microsoft Excel 365, qual função pode ser utilizada para retornar o valor máximo entre as células especificadas por um determinado conjunto de critérios ou condições?', options: ['MÁXIMOPROCV.', 'SOMA.', 'MOD.', 'ARRED.', 'MÁXIMOSES.'], correct: 4, explanation: 'A função que encontra o valor máximo em um intervalo que atende a uma ou mais condições é a MÁXIMOSES.' },
+
+                // Tema 4: Conteúdo
+                { type: 'content', slideTitle: 'Tema 4: Funções de Procura e Referência', title: 'Explicação do Tema', text: 'Essas funções servem para "pesquisar" um valor em uma lista ou tabela e retornar um valor correspondente.', list: ['<strong>PROCV(valor_procurado; matriz_tabela; núm_índice_coluna; [procurar_intervalo]):</strong> A mais famosa. Procura um valor na primeira coluna de uma tabela e retorna um dado de outra coluna, mas na mesma linha.', '<strong>PROCH(...):</strong> Idêntica à PROCV, mas faz a busca na primeira linha da tabela (procura horizontal).', '<strong>CORRESP(...):</strong> Retorna a posição (o número da linha ou coluna) de um item em um intervalo.', '<strong>PROCX(...):</strong> A função mais moderna e flexível, que pode substituir PROCV e PROCH.']},
+
+                // Tema 4: Questões
+                { type: 'quiz', id: 20, question: '(FUNDATEC - Q2563081) No Excel 2013, qual é a finalidade da função PROCV?', options: ['Encontrar itens em uma tabela ou um intervalo por linha.', 'Calcular a média dos valores em um intervalo.', 'Contar o número de células não vazias em um intervalo.', 'Adicionar todos os valores em um intervalo de células.', 'Filtrar dados em uma tabela.'], correct: 0, explanation: 'PROCV (Procura Vertical) busca um valor na primeira coluna de uma tabela e retorna um dado correspondente de outra coluna na mesma linha.' },
+                { type: 'quiz', id: 21, question: '(OBJETIVA - Q2570319) No Microsoft Excel, quando o usuário desejar analisar uma única linha, ou coluna, e localizar um valor na mesma posição em uma segunda linha ou coluna, pode-se usar a função:', options: ['PROC', 'SOMA', 'LOC', 'BUSCA'], correct: 0, explanation: 'O termo PROC é frequentemente usado em concursos como uma abreviação genérica para as funções de procura, como PROCV e PROCH.' },
+                { type: 'quiz', id: 22, question: '(Legalle - Q3460061) No Microsoft Excel 365, qual função pode ser utilizada para procurar um item especificado em um intervalo de células e retornar a posição relativa desse item no intervalo?', options: ['SES.', 'SOMA.', 'CONT.SE.', 'PROCX.', 'CORRESP.'], correct: 4, explanation: 'A função cuja finalidade específica é retornar a posição (índice) de um item dentro de um intervalo é a CORRESP.' },
+                { type: 'quiz', id: 23, question: '(IADES / BRB – 2022) Considere essa planilha elaborada no aplicativo Microsoft Excel 2021. Aplicou-se à célula D10 a fórmula `=PROCV(A10; A2:D8; 2; FALSO)`. Após a execução da fórmula, qual será o valor da célula D10?', options: ['Mouse', 'R$ 250,00', '6855200', '14', 'R$ 50,00.'], correct: 0, explanation: 'A fórmula busca o valor da célula A10 (6855200) na primeira coluna do intervalo A2:D8. Encontra na linha 5 e retorna o valor da 2ª coluna dessa linha, que é "Mouse".' },
+                { type: 'quiz', id: 24, question: '(SELECON / Câmara Municipal de Cuiabá-MT – 2021) Com base na Figura 1 abaixo, considere que o usuário digitou na célula A5 o seguinte: `=PROCV(19;A1:D4;3)` e, logo após, pressionou a tecla Enter (teclado). Que valor conterá em A5?', options: ['4.', '15.', '19.', '21.', '33.'], correct: 4, explanation: 'A fórmula procura o valor 19 na primeira coluna (A1:A4). Encontra em A4 e retorna o valor da 3ª coluna dessa linha (C4), que é 33.' },
+
+                // Tema 5: Conteúdo
+                { type: 'content', slideTitle: 'Tema 5: Referências de Célula', title: 'Relativa, Absoluta e Mista', text: 'Este é um dos tópicos mais importantes. Entender a diferença é crucial:', list: ['<strong>Referência Relativa (ex: A1):</strong> Ao copiar ou arrastar, a referência se ajusta automaticamente.', '<strong>Referência Absoluta (ex: $A$1):</strong> O cifrão ($) <strong>trava</strong> a coluna e a linha. A referência não mudará ao ser copiada.', '<strong>Referência Mista (ex: A$1 ou $A1):</strong> Trava apenas a linha ou apenas a coluna.', '<strong>Atalho:</strong> A tecla <strong>F4</strong> alterna entre os tipos de referência.', '<strong>Referência Externa:</strong> `NomeDaPlanilha!A1` (outra planilha); `[Pasta.xlsx]Planilha!A1` (outra pasta de trabalho).']},
+
+                // Tema 5: Questões
+                { type: 'quiz', id: 25, question: '(OBJETIVA - Q2625977) Ao trabalhar em uma planilha no Excel, um usuário deseja criar uma fórmula que some os valores das células A1, A2 e A3, mas ele quer que a referência à célula A1 seja absoluta, enquanto que as outras sejam relativas. Qual das seguintes fórmulas atenderia ao desejado?', options: ['`=A1 + $A2 + $A3`', '`=$A$1 + A2 + A3`', '`=A$1 + A$2 + A$3`', '`=$A$1 + $A$2 + $A$3`'], correct: 1, explanation: 'Uma referência absoluta trava a linha e a coluna com cifrões ($). A sintaxe para a célula A1 absoluta é `$A$1`. Uma referência relativa não usa cifrões (A2 e A3).' },
+                { type: 'quiz', id: 26, question: '(IBFC / Câmara Municipal de Araraquara/SP – 2016) No Microsoft Excel 2010 temos na célula A3 a seguinte fórmula: `=A1+B1`. Se arrastarmos com o mouse, nesta célula A3, pelo canto inferior direito para baixo, ou seja, pela alça de preenchimento, ficaremos na célula A4 com a fórmula:', options: ['`=A1+B1`', '`=A2+B2`', '`=2A+2B`', '`=A2+B1`'], correct: 1, explanation: 'Ao arrastar uma fórmula com referências relativas para baixo, o número da linha é incrementado. Portanto, `=A1+B1` na célula A3 torna-se `=A2+B2` na célula A4.' },
+                { type: 'quiz', id: 27, question: '(IBFC / EMDEC – 2016) Você está utilizando o Microsoft Office 2010 - Excel para criar uma planilha. Uma determinada fórmula colocada na célula com uma multiplicação de duas células (Ex.: `A1*B1`) deve ser copiada para as demais colunas, mantendo constante a segunda parte da equação. Neste caso a segunda parte (No exemplo `?B?1` - Leia-se `?` o caractere que deve ser inserido) deverá ser precedida do símbolo apresentado na alternativa:', options: ['%.', '@.', '$.', '#.'], correct: 2, explanation: 'Para manter uma referência de célula constante ao copiar uma fórmula, deve-se usar o símbolo de cifrão (`$`), que define uma referência absoluta.' },
+                { type: 'quiz', id: 28, question: '(AOCP / TRE AC - 2015) Um usuário do MS-Excel 2010 ou superior, português - Brasil, necessita referenciar a célula B5 da planilha 2, “Plan2”, na célula A3 da planilha 1, “Plan1”. O comando correto a ser digitado pelo usuário para a criação dessa referência é:', options: ['`=Plan2!B5Plan1!A3`', '`=Plan2IB5 + A3`', '`=Plan1!A3`', '`=Plan2!B5`', '`=Plan1!A3IB5`'], correct: 3, explanation: 'Para referenciar uma célula de outra planilha na mesma pasta de trabalho, a sintaxe é `NomeDaPlanilha!EndereçoDaCélula`.' },
+
+                // Tema 6: Conteúdo
+                { type: 'content', slideTitle: 'Tema 6: Ferramentas de Dados e Formatação', title: 'Explicação do Tema', text: 'Este tema cobre ferramentas que ajudam a organizar, limpar e visualizar dados rapidamente.', list: ['<strong>Formatação Condicional:</strong> Aplica formatos (cores, ícones) a células que atendem a uma regra (Guia: Página Inicial).', '<strong>Congelar Painéis:</strong> Mantém linhas ou colunas visíveis ao rolar a planilha (Guia: Exibir).', '<strong>Classificar e Filtrar:</strong> Ordena dados e exibe apenas linhas que atendem a um critério (Guia: Dados).', '<strong>Preenchimento Relâmpago:</strong> O Excel detecta um padrão e completa o restante para você (Guia: Dados).']},
+
+                // Tema 6: Questões
+                { type: 'quiz', id: 29, question: '(FUNDATEC - Q2563083) No Excel 2013, o ícone (imagem de um raio) representa a função de:', options: ['Preencher.', 'Teste de Hipótese.', 'Preenchimento Relâmpago.', 'Segmentação de Dados.', 'Encontrar Erros.'], correct: 2, explanation: 'O ícone de um raio sobre uma grade de células representa o Preenchimento Relâmpago (Flash Fill).' },
+                { type: 'quiz', id: 30, question: '(Legalle - Q3613063) [...] identifique o grupo na guia Página Inicial onde a funcionalidade Classificar e Filtrar pode ser encontrada.', options: ['Estilos.', 'Edição.', 'Células.', 'Suplementos.'], correct: 1, explanation: 'O comando Classificar e Filtrar está localizado no grupo Edição, no final da guia Página Inicial.' },
+                { type: 'quiz', id: 31, question: '(IADES / CRESS - 2016) Como mesclar células em uma tabela no Microsoft Excel 2016?', options: ['Selecionar a célula da esquerda, depois clicar em Início > Mesclar e Centralizar.', 'Na guia Página Inicial, no grupo Células, clicar em Formatar.', 'Selecionar duas ou mais células adjacentes que se deseja mesclar, depois clicar em Início > Mesclar e Centralizar.', 'Na guia Página Inicial, no grupo Células, clicar em Inserir.', 'Selecionar duas ou mais células adjacentes que se deseja mesclar, depois clicar em Início > Quebrar Texto Automaticamente.'], correct: 2, explanation: 'Para mesclar, é preciso primeiro selecionar as células adjacentes e depois usar o comando "Mesclar e Centralizar" na guia Página Inicial.' },
+                { type: 'quiz', id: 32, question: '(FUNDATEC / CREA PR - 2012) No Excel 2010, é possível redimensionar a largura de um conjunto de colunas de uma planilha simultaneamente, de forma que, ao final da operação, todas tenham a mesma largura. Qual das seguintes alternativas descreve como realizar esse procedimento corretamente?', options: ['Selecionar as colunas a serem alteradas e redimensionar uma das colunas selecionadas.', 'Selecionar as colunas a serem alteradas e modificar o tamanho da fonte.', 'Selecionar as colunas a serem alteradas e clicar em “Aumentar Recuo”.', 'Selecionar as colunas a serem alteradas e aumentar ou diminuir o nível de Zoom.', 'Selecionar as colunas a serem alteradas e, na guia “Exibição”, clicar em “Organizar Tudo”.'], correct: 0, explanation: 'Para aplicar a mesma largura a várias colunas, o usuário deve selecionar todas as colunas desejadas e então arrastar a borda de qualquer uma das colunas selecionadas para a largura desejada.' },
+
+                // Tema 7: Conteúdo
+                { type: 'content', slideTitle: 'Tema 7: Gráficos e Tabelas Dinâmicas', title: 'Explicação do Tema', text: 'São duas das ferramentas mais poderosas do Excel para análise e apresentação de dados.', list: ['<strong>Gráficos:</strong> Transformam números em representações visuais. Tipos comuns: Colunas, Linhas, Pizza, Barra. A criação começa na guia <strong>Inserir</strong>.', '<strong>Tabelas Dinâmicas:</strong> Permitem resumir, agrupar e reorganizar grandes volumes de dados de forma interativa. Também criadas a partir da guia <strong>Inserir</strong>.']},
+
+                // Tema 7: Questões
+                { type: 'quiz', id: 33, question: '(FUNDATEC - Q3094619) Para facilitar a criação de gráficos, o Microsoft Excel tem um recurso que exibe os tipos de gráficos recomendados para o intervalo selecionado. Por padrão, para acioná-lo, é necessário [...]', options: ['Clicar com o botão da direita do mouse [...].', 'Clicar no botão de ação Converter [...].', 'Clicar no botão de ação Análise Rápida e, na janela que aparece, clicar em Gráficos.', 'Na guia Inserir, clicar no botão Tabela Gráfica.', 'Na guia Desenhar, clicar no botão Gráfico.'], correct: 2, explanation: 'Ao selecionar dados, o ícone de Análise Rápida aparece, oferecendo acesso rápido a várias ferramentas, incluindo a criação de Gráficos.' },
+                { type: 'quiz', id: 34, question: '(FUNDATEC - Q2563082) São funcionalidades disponíveis no Excel 2013: I. Caixa de Texto. II. Cabeçalho e Rodapé. III. Inserir WordArt. Quais estão corretas?', options: ['Apenas I.', 'Apenas II.', 'Apenas III.', 'Apenas I e II.', 'I, II e III.'], correct: 4, explanation: 'Todos os três são elementos que podem ser adicionados pela guia Inserir para complementar gráficos e planilhas.' },
+                { type: 'quiz', id: 35, question: '(FUNDATEC - Q2551066) Considerando o Excel 2013, para criação de uma tabela dinâmica, assinale a alternativa que apresenta de forma mais correta a sequência de ações.', options: ['Guia Inserir – Tabela – Tabela Dinâmica [...].', 'Guia Dados – Tabela Dinâmica [...].', 'Guia Fórmulas – Tabela Dinâmica [...].', 'Página Inicial – Tabela – Tabela Dinâmica [...].', 'Guia Inserir – Tabela Dinâmica – Selecionar uma tabela ou intervalo – Escolher Local [...].'], correct: 4, explanation: 'O caminho padrão para criar uma Tabela Dinâmica é: guia Inserir > Tabela Dinâmica.' },
+                { type: 'quiz', id: 36, question: '(OBJETIVA - Q2385651) [...] Qual dos seguintes aplicativos é utilizado para criar tabelas dinâmicas, como demonstrado acima?', options: ['Word.', 'Excel.', 'Bluetooth.', 'Paint.'], correct: 1, explanation: 'Tabelas Dinâmicas são uma ferramenta característica do Microsoft Excel.' },
+                { type: 'quiz', id: 37, question: '(Legalle - Q3468236) [...] Considerando a imagem acima, pode-se afirmar que o tipo de gráfico utilizado pelo usuário foi: (imagem de um gráfico de Rosca)', options: ['Funil.', 'Área 3D.', 'Mapa de árvore.', 'Rosca.'], correct: 3, explanation: 'O gráfico que exibe dados em anéis é o gráfico de Rosca.' },
+                
+                // Tema 8: Conteúdo
+                { type: 'content', slideTitle: 'Tema 8: Atalhos e Segurança', title: 'Explicação do Tema', text: '', list: ['<strong>Atalhos de Teclado:</strong> As bancas cobram os atalhos mais comuns para agilizar tarefas. Alguns importantes: `Ctrl + Z` (Desfazer), `Ctrl + W` (Fechar pasta de trabalho), `Ctrl + L` (Localizar), `F4` (Alternar referência).', '<strong>Segurança:</strong> Refere-se principalmente à proteção de arquivos com senha (Guia: Arquivo > Informações). O ponto mais importante é que <strong>o Excel não possui um mecanismo para recuperar senhas perdidas</strong>.']},
+
+                // Tema 8: Questões
+                { type: 'quiz', id: 38, question: '(FUNDATEC - Q3178582) [...] Para mostrar ou ocultar a barra de ferramentas de acesso rápido, é necessário pressionar a tecla:', options: ['Page down.', 'Alt.', 'F4.', 'Shift.'], correct: 1, explanation: 'Ao pressionar a tecla Alt, o Excel exibe as Dicas de Tecla (KeyTips), permitindo a navegação por teclado na Faixa de Opções e na Barra de Acesso Rápido.' },
+                { type: 'quiz', id: 39, question: '(DÉDALUS CONCURSOS / IPRED-SP - 2018) No Microsoft Excel 2010 o usuário deve utilizar as seguintes teclas de atalho para realizar a função de “DESFAZER”:', options: ['CTRL+Z', 'CTRL+A', 'CTRL+X', 'CTRL+P', 'CTRL+B'], correct: 0, explanation: 'O atalho universal para a ação de "Desfazer" na maioria dos softwares, incluindo o pacote Office, é `CTRL+Z`.' },
+                { type: 'quiz', id: 40, question: '(IDECAN / UERN – 2016) Ao se utilizar o Excel 2013 (Configuração Local, Idioma Português-Brasil) para sair do programa há várias formas, como clicar em Arquivo e Fechar, usando as teclas <ALT> + <F4>, ou clicar no X, localizado no canto superior direito. Nessa versão existe uma outra forma de se fechar a pasta de trabalho. Assinale o atalho utilizado para fechar tal pasta de trabalho no Excel 2013.', options: ['<CTRL> + <Q>.', '<CTRL> + <U>.', '<CTRL> + <W>.', '<CTRL> + <Y>.'], correct: 2, explanation: 'O atalho `CTRL+W` é utilizado para fechar a pasta de trabalho ativa, sem fechar o programa Excel por completo.' },
+
+            ];
+
+            slideContainer.innerHTML = ''; // Limpa o container
+            slidesData.forEach((data, index) => {
+                const slideEl = document.createElement('div');
+                slideEl.className = 'slide w-full h-full flex-col';
+                slideEl.id = `slide-${index}`;
+
+                if (data.special === 'title-slide') {
+                    slideEl.classList.add('justify-center', 'items-center', 'text-center');
+                    slideEl.innerHTML = `
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">${data.title}</h1>
+                        <h2 class="text-3xl md:text-4xl font-semibold text-blue-600">${data.subtitle}</h2>
+                        <div class="mt-8 text-gray-500">${data.text}</div>
+                    `;
+                } else if (data.type === 'content') {
+                     slideEl.innerHTML = `
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">${data.slideTitle}</h2>
+                        <h3 class="text-xl font-semibold text-blue-600 mb-4">${data.title}</h3>
+                        <p class="text-gray-700 mb-4 leading-relaxed">${data.text.replace(/\n/g, '<br>')}</p>
+                        ${data.list ? `<ul class="list-disc list-inside text-gray-700 space-y-2 mb-4">${data.list.map(item => `<li class="leading-relaxed">${item}</li>`).join('')}</ul>` : ''}
+                    `;
+                } else if (data.type === 'quiz') {
+                    slideEl.classList.add('quiz');
+                    slideEl.dataset.questionId = data.id;
+                    slideEl.innerHTML = `
+                        <h3 class="text-xl font-semibold text-blue-600 mb-2">Questão ${data.id}</h3>
+                        <p class="text-gray-700 mb-6 text-lg">${data.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                        <div class="space-y-3 options-container">
+                            ${data.options.map((opt, i) => `<div class="option p-4 border-2 border-gray-200 rounded-lg" ${i === data.correct ? 'data-correct="true"' : ''}>${String.fromCharCode(65 + i)}) ${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`).join('')}
+                        </div>
+                        <div class="feedback mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p class="font-bold">Gabarito: ${String.fromCharCode(65 + data.correct)}</p>
+                            <p><strong>Comentário:</strong> ${data.explanation}</p>
+                        </div>
+                    `;
+                }
+                slideContainer.appendChild(slideEl);
+            });
+            slides = document.querySelectorAll('.slide');
+            setupQuizListeners();
+            showSlide(currentSlide);
+        }
+
+        function showSlide(n) {
+            if (slides.length > 0) {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active');
+                    if (index === n) {
+                        slide.classList.add('active');
+                    }
+                });
+                updateCounter();
+                updateNavButtons();
+            }
+        }
+
+        function updateCounter() {
+            slideCounter.textContent = `Slide ${currentSlide + 1} de ${slides.length}`;
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+        
+        function setupQuizListeners() {
+            document.querySelectorAll('.quiz').forEach(quizSlide => {
+                const optionsContainer = quizSlide.querySelector('.options-container');
+                optionsContainer.addEventListener('click', (e) => {
+                    const selectedOption = e.target.closest('.option');
+                    if (!selectedOption || optionsContainer.classList.contains('answered')) return;
+                    
+                    optionsContainer.classList.add('answered');
+                    
+                    const isCorrect = selectedOption.dataset.correct === 'true';
+                    
+                    if (isCorrect) {
+                        selectedOption.classList.add('correct');
+                    } else {
+                        selectedOption.classList.add('incorrect');
+                        const correctOption = optionsContainer.querySelector('[data-correct="true"]');
+                        correctOption.classList.add('correct');
+                    }
+                    
+                    const feedback = quizSlide.querySelector('.feedback');
+                    feedback.classList.add('visible');
+                });
+            });
+        }
+        
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        
+        createSlides();
+    </script>
+</body>
+</html>
